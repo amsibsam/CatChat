@@ -11,7 +11,7 @@ import UIKit
 import IQKeyboardManagerSwift
 
 protocol HomeNavigator {
-    
+    func openChatRoom(with userId: String)
 }
 
 class HomeCoordinator: BaseCoordniatorProtocol {
@@ -34,5 +34,9 @@ class HomeCoordinator: BaseCoordniatorProtocol {
 }
 
 extension HomeCoordinator: HomeNavigator {
-    
+    func openChatRoom(with userId: String) {
+        guard let navController = self.navigationMethod.rootViewController as? UINavigationController else { return }
+        let chatRoomCoordinator = ChatRoomCoordinator(navigationMethod: navController)
+        chatRoomCoordinator.start(partnerUserId: userId)
+    }
 }

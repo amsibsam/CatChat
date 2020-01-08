@@ -10,15 +10,15 @@ import Foundation
 import AsyncDisplayKit
 
 class HomeViewController: ASViewController<ASDisplayNode> {
-    private let viewModel: HomeViewModel?
+    private let viewModel: HomeViewModel
     
     init(viewModel: HomeViewModel) {
         self.viewModel = viewModel
-        super.init(node: HomeNode())
+        super.init(node: HomeNode(viewModel: self.viewModel))
+        self.view.backgroundColor = .white
     }
     
     required init?(coder: NSCoder) {
-        self.viewModel = nil
-        super.init(coder: coder)
+        fatalError("not being overrided")
     }
 }

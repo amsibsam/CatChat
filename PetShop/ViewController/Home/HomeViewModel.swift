@@ -14,4 +14,8 @@ class HomeViewModel {
     init(navigator: HomeNavigator) {
         self.navigator = navigator
     }
+    
+    func startChat(with partnerUserid: String) {
+        navigator.openChatRoom(with: partnerUserid)
+    }
 }

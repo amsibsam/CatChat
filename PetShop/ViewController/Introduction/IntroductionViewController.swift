@@ -11,18 +11,18 @@ import AsyncDisplayKit
 import QiscusCore
 
 class IntroductionViewController: ASViewController<IntroductionNode> {
-    private let introductionNode: IntroductionNode?
-    private let viewModel: IntroductionViewModel?
+    private let introductionNode: IntroductionNode
+    private let viewModel: IntroductionViewModel
     
     init(viewModel: IntroductionViewModel) {
         self.viewModel = viewModel
-        self.introductionNode = IntroductionNode(viewModel: self.viewModel!)
-        super.init(node: self.introductionNode!)
+        self.introductionNode = IntroductionNode(viewModel: self.viewModel)
+        super.init(node: self.introductionNode)
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.viewModel?.onStartFinished = { isSuccess in
+        self.viewModel.onStartFinished = { isSuccess in
             if !isSuccess {
                 print("login failed")
             }
@@ -30,8 +30,6 @@ class IntroductionViewController: ASViewController<IntroductionNode> {
     }
     
     required init?(coder: NSCoder) {
-        self.introductionNode = nil
-        self.viewModel = nil
-        super.init(coder: coder)
+        fatalError("init(coder:) has not been implemented")
     }
 }

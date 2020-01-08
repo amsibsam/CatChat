@@ -10,15 +10,16 @@ import Foundation
 import AsyncDisplayKit
 
 class HomeNode: ASDisplayNode {
+    private let viewModel: HomeViewModel
     private let noChatImageNode = ASNetworkImageNode()
     private let noChatTextNode = ASTextNode()
     private let chatInstructionTextNode = ASTextNode()
     private let userIdEditTextNode = ASEditableTextNode()
     private let startChatButtonNode = ASButtonNode()
     
-    var onStartChatDidTap: (() -> Void)?
     
-    override init() {
+    init(viewModel: HomeViewModel) {
+        self.viewModel = viewModel
         super.init()
         self.automaticallyManagesSubnodes = true
         self.backgroundColor = .white
@@ -87,7 +88,8 @@ class HomeNode: ASDisplayNode {
         self.startChatButtonNode.style.spacingBefore = 6
         self.startChatButtonNode.cornerRadius = 6
         self.startChatButtonNode.didTap = { [weak self] in
-            self?.onStartChatDidTap?()
+            guard let `self` = self else { return }
+            self.viewModel.startChat(with: self.userIdEditTextNode.attributedText?.string ?? "")
         }
         
         return self.startChatButtonNode
