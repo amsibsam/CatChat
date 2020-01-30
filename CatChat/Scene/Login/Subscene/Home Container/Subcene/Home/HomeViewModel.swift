@@ -18,6 +18,7 @@ class HomeViewModel {
     var onLoadRoomError: ((String) -> Void)? = nil
     var onNeedReloadRooms: (() -> Void)? = nil
     var onNeedReconfigNode: (() -> Void)? = nil
+    var onGotNewRoom: ((IndexPath) -> Void)? = nil
     var onNeedReconfigTabBar: ((Bool) -> Void)? = nil
     var chatRooms: [RoomModel] = []
     
@@ -27,6 +28,26 @@ class HomeViewModel {
     }
     
     // MARK: - Public Function -
+    func listenRoomEvent(isNeedToListen: Bool) {
+        if isNeedToListen {
+            self.interactor.listenRoomChanges(onGotNewRoom: { [weak self] (room) in
+                if let _ = self?.chatRooms.filter({ (filterRoom) -> Bool in
+                    return filterRoom.id == room.id
+                }).first {
+                    return
+                }
+                
+                self?.chatRooms.insert(room, at: 0)
+                self?.onGotNewRoom?(IndexPath(row: 0, section: 0))
+            }, onNeedReloadRooms: { [weak self] in
+                self?.onNeedReloadRooms?()
+            })
+            
+            return
+        }
+        
+        self.interactor.unlistenRoomChanges()
+    }
     
     func createChat() {
         navigator.openCreateRoom()
@@ -60,6 +81,7 @@ class HomeViewModel {
     }
     
     // MARK: - Private Function -
+    
     private func fetchRoomFromLocal(isAfterFetchFromServer: Bool) {
         self.chatRooms = self.interactor.fetchRoomsFromLocal()
         

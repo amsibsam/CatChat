@@ -10,6 +10,18 @@ import Foundation
 import QiscusCore
 
 class HomeInteractorImpl: HomeInteractor {
+    private var onGotNewRoom: ((RoomModel) -> Void)? = nil
+    private var onNeedReloadRooms: (() -> Void)? = nil
+    
+    func listenRoomChanges(onGotNewRoom: @escaping ((RoomModel) -> Void), onNeedReloadRooms: @escaping (() -> Void)) {
+        self.onGotNewRoom = onGotNewRoom
+        self.onNeedReloadRooms = onNeedReloadRooms
+        QiscusCore.delegate = self
+    }
+    
+    func unlistenRoomChanges() {
+        QiscusCore.delegate = nil
+    }
  
     func fetchRoomsFromLocal() -> [RoomModel] {
         return QiscusCore.database.room.all().filter { (room) -> Bool in
@@ -43,4 +55,44 @@ class HomeInteractorImpl: HomeInteractor {
             onError(error.message)
         }
     }
+}
+
+extension HomeInteractorImpl: QiscusCoreDelegate {
+    func onRoomMessageReceived(_ room: RoomModel, message: CommentModel) {
+        self.onNeedReloadRooms?()
+    }
+    
+    func onRoomMessageDeleted(room: RoomModel, message: CommentModel) {
+        
+    }
+    
+    func onRoomDidChangeComment(comment: CommentModel, changeStatus status: CommentStatus) {
+        
+    }
+    
+    func onRoomMessageDelivered(message: CommentModel) {
+        
+    }
+    
+    func onRoomMessageRead(message: CommentModel) {
+        
+    }
+    
+    func onRoom(update room: RoomModel) {
+        self.onNeedReloadRooms?()
+    }
+    
+    func onRoom(deleted room: RoomModel) {
+        
+    }
+    
+    func gotNew(room: RoomModel) {
+        self.onGotNewRoom?(room)
+    }
+    
+    func onChatRoomCleared(roomId: String) {
+        
+    }
+    
+    
 }

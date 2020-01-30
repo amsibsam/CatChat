@@ -43,6 +43,10 @@ class HomeWithChatNode: ASDisplayNode {
     }
     
     private func bindViewModel() {
+        self.viewModel.onGotNewRoom = { [weak self] newIndexPath in
+            self?.chatRoomTableNode.insertRows(at: [newIndexPath], with: .middle)
+        }
+        
         self.viewModel.onNeedReloadRooms = { [weak self] in
             self?.chatRoomTableNode.reloadData()
         }

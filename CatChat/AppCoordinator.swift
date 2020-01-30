@@ -36,6 +36,7 @@ class AppCoordinator: Coordinator {
     private func setupRootState() {
 //        self.navigationMethod.rootViewController = TestViewController()
         if QiscusCore.hasSetupUser() {
+            QiscusCore.connect()
             self.showHome()
         } else {
             self.showIntroduction()

@@ -15,7 +15,11 @@ class ChatRoomViewModel {
     private let navigator: ChatRoomNavigator
     private let partnerUserId: String
     private let interactor: ChatRoomInteractor
-    private var roomId: String? = nil
+    private var room: RoomModel? = nil {
+        didSet {
+            self.listenRoomEvent(isNeedToListen: true)
+        }
+    }
     
     // MARK: - Public properties -
     var onChatTitleLoaded: ((String) -> Void)? = nil
@@ -31,10 +35,27 @@ class ChatRoomViewModel {
         self.navigator = navigator
         self.interactor = interactor
         self.partnerUserId = partnerUserId
-        QiscusCore.delegate = self
     }
     
     // MARK: - Public Function -
+    func listenRoomEvent(isNeedToListen: Bool) {
+        if !isNeedToListen {
+            self.room?.delegate = nil
+            return
+        }
+        
+        guard let room = self.room else {
+            return
+        }
+        
+        self.interactor.listenNewCommentEvent(onRoom: room) { (comment) in
+            if !comment.isMyComment {
+                self.commentViewModels.insert(ChatCommentTextCellViewModel(comment: comment), at: 0)
+                self.onReceivingComment?(IndexPath(row: 0, section: 0))
+            }
+        }
+    }
+    
     func loadChat() {
         // fetch from local first
         self.fetchRoomAndCommentFromLocal()
@@ -43,7 +64,7 @@ class ChatRoomViewModel {
     }
     
     func sendComment(withText text: String) {
-        guard let roomId = self.roomId else {
+        guard let roomId = self.room?.id else {
             return
         }
         
@@ -61,7 +82,7 @@ class ChatRoomViewModel {
     // MARK: - Public Function -
     private func fetchRoomAndCommentFromLocal() {
         if let roomWithComments = self.interactor.fetchLocalRoomAndComments(withRoomName: self.partnerUserId) {
-            self.roomId = roomWithComments.room.id
+            self.room = roomWithComments.room
             self.onChatTitleLoaded?(roomWithComments.room.name)
             self.commentViewModels = roomWithComments.comments.map({ (comment) -> ChatCommentTextCellViewModel in
                 return ChatCommentTextCellViewModel(comment: comment)
@@ -77,47 +98,5 @@ class ChatRoomViewModel {
                 self?.onLoadChatFailed?(error.message)
         })
     }
-}
 
-extension ChatRoomViewModel: QiscusCoreDelegate {
-    func onRoomMessageReceived(_ room: RoomModel, message: CommentModel) {
-        if !message.isMyComment {
-            self.commentViewModels.insert(ChatCommentTextCellViewModel(comment: message), at: 0)
-            self.onReceivingComment?(IndexPath(row: 0, section: 0))
-        }
-    }
-    
-    func onRoomMessageDeleted(room: RoomModel, message: CommentModel) {
-        
-    }
-    
-    func onRoomDidChangeComment(comment: CommentModel, changeStatus status: CommentStatus) {
-        
-    }
-    
-    func onRoomMessageDelivered(message: CommentModel) {
-        
-    }
-    
-    func onRoomMessageRead(message: CommentModel) {
-        
-    }
-    
-    func onRoom(update room: RoomModel) {
-        
-    }
-    
-    func onRoom(deleted room: RoomModel) {
-        
-    }
-    
-    func gotNew(room: RoomModel) {
-        
-    }
-    
-    func onChatRoomCleared(roomId: String) {
-        
-    }
-    
-    
 }

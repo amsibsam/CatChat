@@ -21,4 +21,8 @@ protocol ChatRoomInteractor {
     func fetchRoomFromServer(withPartnerId partnerId: String,
                              onFetchSuccess: @escaping (() -> Void),
                              onFetchError: @escaping ((String) -> Void))
+    
+    func listenNewCommentEvent(onRoom room: RoomModel, onGotNewComment: @escaping ((CommentModel) -> Void))
+    
+    func unlistenNewCommentEvent()
 }

@@ -10,6 +10,18 @@ import Foundation
 import QiscusCore
 
 class ChatRoomInteractorImpl: ChatRoomInteractor {
+    private var onGotNewComment: ((CommentModel) -> Void)? = nil
+    private var room: RoomModel? = nil
+    
+    func listenNewCommentEvent(onRoom room: RoomModel, onGotNewComment: @escaping ((CommentModel) -> Void)) {
+        self.onGotNewComment = onGotNewComment
+        self.room = room
+        self.room?.delegate = self
+    }
+    
+    func unlistenNewCommentEvent() {
+        self.room?.delegate = nil
+    }
 
     func fetchRoomFromServer(withPartnerId partnerId: String,
                              onFetchSuccess: @escaping (() -> Void),
@@ -52,6 +64,40 @@ class ChatRoomInteractorImpl: ChatRoomInteractor {
         }) { (error) in
             onFailed(comment)
         }
+    }
+}
+
+extension ChatRoomInteractorImpl: QiscusCoreRoomDelegate {
+    func onMessageReceived(message: CommentModel) {
+        self.onGotNewComment?(message)
+    }
+    
+    func didComment(comment: CommentModel, changeStatus status: CommentStatus) {
+        
+    }
+    
+    func onMessageDelivered(message: CommentModel) {
+        
+    }
+    
+    func onMessageRead(message: CommentModel) {
+        
+    }
+    
+    func onMessageDeleted(message: CommentModel) {
+        
+    }
+    
+    func onUserTyping(userId: String, roomId: String, typing: Bool) {
+        
+    }
+    
+    func onUserOnlinePresence(userId: String, isOnline: Bool, lastSeen: Date) {
+        
+    }
+    
+    func onRoom(update room: RoomModel) {
+        
     }
     
     

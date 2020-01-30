@@ -35,12 +35,14 @@ class HomeViewController: ASViewController<ASDisplayNode> {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.bindViewModel()
+        self.viewModel.listenRoomEvent(isNeedToListen: true)
         self.viewModel.loadRooms()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         self.view.endEditing(true)
+        self.viewModel.listenRoomEvent(isNeedToListen: false)
     }
     
     // MARK: - Private Function -

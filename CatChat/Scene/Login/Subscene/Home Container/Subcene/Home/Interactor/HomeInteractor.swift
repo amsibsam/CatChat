@@ -10,6 +10,8 @@ import Foundation
 import QiscusCore
 
 protocol HomeInteractor {
+    func listenRoomChanges(onGotNewRoom: @escaping ((RoomModel) -> Void), onNeedReloadRooms: @escaping (() -> Void))
+    func unlistenRoomChanges()
     func fetchRoomsFromLocal() -> [RoomModel]
     func fetchRoomsFromServer(onFetchSuccess: @escaping (() -> Void),
                               onFetchFailed: @escaping ((String) -> Void))

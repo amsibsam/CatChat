@@ -43,12 +43,20 @@ class ChatRoomViewController: ASViewController<ASDisplayNode> {
         self.configureSubNode()
         self.configureInputTextSizing()
         self.bindViewModel()
-        
         self.viewModel.loadChat()
-        
         self.sendButtonNode.didTap = { [unowned self] in
             self.sendTextComment()
         }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.viewModel.listenRoomEvent(isNeedToListen: true)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.viewModel.listenRoomEvent(isNeedToListen: false)
     }
     
     // MARK: - Private methods -
