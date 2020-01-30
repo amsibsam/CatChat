@@ -43,7 +43,7 @@ class AppCoordinator: Coordinator {
     }
     
     private func setupQiscus() {
-        QiscusCore.setup(AppID: "petchat-qxydfgbb3z2k0")
+        QiscusCore.setup(AppID: "catchat-rwto1hxthchbc")
     }
     
     private func setupIQKeyboard() {
