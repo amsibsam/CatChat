@@ -22,9 +22,9 @@ class ChatCommentTextCellViewModel {
         }
     }
     
-    var commentId: String {
+    var commentUniqueId: String {
         get {
-            return self.comment.id
+            return self.comment.uniqId
         }
     }
     

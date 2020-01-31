@@ -17,6 +17,7 @@ class HomeViewModel {
     // MARK: - Public properties -
     var onLoadRoomError: ((String) -> Void)? = nil
     var onNeedReloadRooms: (() -> Void)? = nil
+    var onRoomUpdated: ((IndexPath, Bool) -> Void)? = nil
     var onNeedReconfigNode: (() -> Void)? = nil
     var onGotNewRoom: ((IndexPath) -> Void)? = nil
     var onNeedReconfigTabBar: ((Bool) -> Void)? = nil
@@ -39,8 +40,24 @@ class HomeViewModel {
                 
                 self?.chatRooms.insert(room, at: 0)
                 self?.onGotNewRoom?(IndexPath(row: 0, section: 0))
-            }, onNeedReloadRooms: { [weak self] in
-                self?.onNeedReloadRooms?()
+                
+                if self?.chatRooms.count == 1 {
+                    self?.onNeedReconfigNode?()
+                    self?.onNeedReconfigTabBar?(true)
+                }
+                }, onNeedReloadRooms: { [weak self] in
+                    self?.onNeedReloadRooms?()
+                }, onRoomUpdateComment: { [weak self] updatedRoom in
+                    if let updatedIndex = self?.chatRooms.firstIndex(where: { (room) -> Bool in
+                        return room.id == updatedRoom.id
+                    }) {
+                        self?.chatRooms.remove(at: updatedIndex)
+                        self?.onRoomUpdated?(IndexPath(row: updatedIndex, section: 0), false)
+                        self?.chatRooms.insert(updatedRoom, at: 0)
+                        self?.onRoomUpdated?(IndexPath(row: 0, section: 0), true)
+                        
+                    }
+                    
             })
             
             return

@@ -12,6 +12,7 @@ import QiscusCore
 
 class ChatCommentTextCellNode: ASCellNode {
     private let textNode: ASTextNode = ASTextNode()
+    private let commentStatusTextNode: ASTextNode = ASTextNode()
     
     private var comment: CommentModel? = nil
     private let viewModel: ChatCommentTextCellViewModel
@@ -25,6 +26,15 @@ class ChatCommentTextCellNode: ASCellNode {
     }
     
     override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
+        if comment?.isMyComment ?? false {
+            return ASStackLayoutSpec(direction: .vertical, spacing: 0, justifyContent: .center, alignItems: .center, children: [self.configuredCommentTextNode(), self.configuredCommentStatusTextNode()])
+        } else {
+            return ASStackLayoutSpec(direction: .vertical, spacing: 0, justifyContent: .center, alignItems: .center, children: [self.configuredCommentTextNode()])
+        }
+        
+    }
+    
+    private func configuredCommentTextNode() -> ASLayoutSpec {
         guard let comment = self.comment else {
             return ASLayoutSpec()
         }
@@ -48,6 +58,32 @@ class ChatCommentTextCellNode: ASCellNode {
         
         let insetSpec = ASInsetLayoutSpec(insets: UIEdgeInsets(top: 0, left: 10, bottom: 10, right: 10), child: self.textNode)
         let layoutSpec = ASRelativeLayoutSpec(horizontalPosition: bublePosition,
+                                              verticalPosition: .start,
+                                              sizingOption: [],
+                                              child: insetSpec)
+        
+        return layoutSpec
+    }
+    
+    private func configuredCommentStatusTextNode() -> ASLayoutSpec {
+        guard let comment = self.comment else {
+            return ASLayoutSpec()
+        }
+        
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = NSTextAlignment.right
+        self.commentStatusTextNode.attributedText = NSAttributedString(string: comment.status.rawValue,
+                                                          attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 14),
+                                                                       NSAttributedString.Key.foregroundColor: UIColor.black,
+                                                                       NSAttributedString.Key.paragraphStyle: paragraphStyle])
+        self.commentStatusTextNode.style.maxWidth = ASDimensionMake(UIScreen.main.bounds.width * 3/4)
+        self.commentStatusTextNode.style.minWidth = ASDimensionMake(80)
+        self.commentStatusTextNode.style.minHeight = ASDimensionMake(20)
+        self.commentStatusTextNode.placeholderEnabled = true
+        self.commentStatusTextNode.placeholderFadeDuration = 0.1
+        
+        let insetSpec = ASInsetLayoutSpec(insets: UIEdgeInsets(top: 2, left: 0, bottom: 8, right: 0), child: self.commentStatusTextNode)
+        let layoutSpec = ASRelativeLayoutSpec(horizontalPosition: .end,
                                               verticalPosition: .start,
                                               sizingOption: [],
                                               child: insetSpec)

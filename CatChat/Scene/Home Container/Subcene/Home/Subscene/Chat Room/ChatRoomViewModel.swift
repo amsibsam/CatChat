@@ -73,13 +73,25 @@ class ChatRoomViewModel {
                                     onSending: { [unowned self] (comment) in
                                         self.commentViewModels.insert(ChatCommentTextCellViewModel(comment: comment), at: 0)
                                         self.onSendingComment?(IndexPath(row: 0, section: 0))},
-                                    onSent: { [weak self] (_) in
-                                        self?.onCommentSent?()},
-                                    onFailed: { [weak self] (_) in
-                                        self?.onSendingCommentFailed?()})
+                                    onStatusChanged: { [weak self] comment in
+                                        guard let commentViewModel = self?.findCommentViewModel(fromComment: comment) else {
+                                            return
+                                        }
+                                        
+                                        commentViewModel.updateComment(comment: comment)})
     }
     
     // MARK: - Public Function -
+    private func findCommentViewModel(fromComment comment: CommentModel) -> ChatCommentTextCellViewModel? {
+        guard let commentViewModel = self.commentViewModels.filter({ (commentViewModel) -> Bool in
+            return commentViewModel.commentUniqueId == comment.uniqId
+        }).first else {
+            return nil
+        }
+        
+        return commentViewModel
+    }
+    
     private func fetchRoomAndCommentFromLocal() {
         if let roomWithComments = self.interactor.fetchLocalRoomAndComments(withRoomName: self.partnerUserId) {
             self.room = roomWithComments.room

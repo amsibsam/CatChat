@@ -11,11 +11,13 @@ import QiscusCore
 
 class HomeInteractorImpl: HomeInteractor {
     private var onGotNewRoom: ((RoomModel) -> Void)? = nil
+    private var onRoomUpdateComment: ((RoomModel) -> Void)? = nil
     private var onNeedReloadRooms: (() -> Void)? = nil
     
-    func listenRoomChanges(onGotNewRoom: @escaping ((RoomModel) -> Void), onNeedReloadRooms: @escaping (() -> Void)) {
+    func listenRoomChanges(onGotNewRoom: @escaping ((RoomModel) -> Void), onNeedReloadRooms: @escaping (() -> Void), onRoomUpdateComment: @escaping ((RoomModel) -> Void)) {
         self.onGotNewRoom = onGotNewRoom
         self.onNeedReloadRooms = onNeedReloadRooms
+        self.onRoomUpdateComment = onRoomUpdateComment
         QiscusCore.delegate = self
     }
     
@@ -24,9 +26,15 @@ class HomeInteractorImpl: HomeInteractor {
     }
  
     func fetchRoomsFromLocal() -> [RoomModel] {
-        return QiscusCore.database.room.all().filter { (room) -> Bool in
+        let localRooms = QiscusCore.database.room.all().filter { (room) -> Bool in
             return !(room.lastComment?.message.isEmpty ?? true)
         }
+        
+        localRooms.forEach { (room) in
+            QiscusCore.shared.markAsDelivered(roomId: room.id, commentId: room.lastComment?.id ?? "")
+        }
+        
+        return localRooms
     }
     
     func fetchRoomsFromServer(onFetchSuccess: @escaping (() -> Void),
@@ -59,9 +67,10 @@ class HomeInteractorImpl: HomeInteractor {
 
 extension HomeInteractorImpl: QiscusCoreDelegate {
     func onRoomMessageReceived(_ room: RoomModel, message: CommentModel) {
-        self.onNeedReloadRooms?()
+        QiscusCore.shared.markAsDelivered(roomId: room.id, commentId: message.id)
+        self.onRoomUpdateComment?(room)
     }
-    
+        
     func onRoomMessageDeleted(room: RoomModel, message: CommentModel) {
         
     }

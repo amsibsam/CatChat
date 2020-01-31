@@ -11,6 +11,7 @@ import QiscusCore
 
 class ChatRoomInteractorImpl: ChatRoomInteractor {
     private var onGotNewComment: ((CommentModel) -> Void)? = nil
+    private var onStatusChanged: ((CommentModel) -> Void)? = nil
     private var room: RoomModel? = nil
     
     func listenNewCommentEvent(onRoom room: RoomModel, onGotNewComment: @escaping ((CommentModel) -> Void)) {
@@ -42,6 +43,7 @@ class ChatRoomInteractorImpl: ChatRoomInteractor {
                 comments = localComments
             }
             
+            self.readAllComments(comments: comments)
             return (room: localRoom, comments: comments)
         }
         
@@ -51,24 +53,35 @@ class ChatRoomInteractorImpl: ChatRoomInteractor {
     func sendComment(withText text: String,
                      inRoomWithId roomId: String,
                      onSending: @escaping ((CommentModel) -> Void),
-                     onSent: @escaping ((CommentModel) -> Void),
-                     onFailed: @escaping ((CommentModel) -> Void)) {
-        
+                     onStatusChanged: @escaping ((CommentModel) -> Void)) {
+        self.onStatusChanged = onStatusChanged
         let comment = CommentModel()
         comment.message = text
         comment.roomId = roomId
         
         onSending(comment)
-        QiscusCore.shared.sendMessage(message: comment, onSuccess: { (sentComment) in
-            onSent(sentComment)
-        }) { (error) in
-            onFailed(comment)
+        QiscusCore.shared.sendMessage(message: comment, onSuccess: { [weak self] (sentComment) in
+            self?.onStatusChanged?(sentComment)
+        }) { [weak self] (error) in
+            comment.status = .failed
+            self?.onStatusChanged?(comment)
+        }
+    }
+    
+    private func readAllComments(comments: [CommentModel]) {
+        comments.forEach { (comment) in
+            QiscusCore.shared.markAsRead(roomId: comment.roomId, commentId: comment.id)
         }
     }
 }
 
 extension ChatRoomInteractorImpl: QiscusCoreRoomDelegate {
     func onMessageReceived(message: CommentModel) {
+        guard let roomId = self.room?.id else {
+            return
+        }
+        
+        QiscusCore.shared.markAsRead(roomId: roomId, commentId: message.id)
         self.onGotNewComment?(message)
     }
     
@@ -77,11 +90,11 @@ extension ChatRoomInteractorImpl: QiscusCoreRoomDelegate {
     }
     
     func onMessageDelivered(message: CommentModel) {
-        
+        self.onStatusChanged?(message)
     }
     
     func onMessageRead(message: CommentModel) {
-        
+        self.onStatusChanged?(message)
     }
     
     func onMessageDeleted(message: CommentModel) {

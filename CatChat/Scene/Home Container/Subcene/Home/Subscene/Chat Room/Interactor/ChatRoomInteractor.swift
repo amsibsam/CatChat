@@ -13,8 +13,7 @@ protocol ChatRoomInteractor {
     func sendComment(withText text: String,
                      inRoomWithId rooId: String,
                      onSending: @escaping ((CommentModel) -> Void),
-                     onSent: @escaping ((CommentModel) -> Void),
-                     onFailed: @escaping ((CommentModel) -> Void))
+                     onStatusChanged: @escaping ((CommentModel) -> Void))
     
     func fetchLocalRoomAndComments(withRoomName roomName: String) -> (room: RoomModel, comments: [CommentModel])?
     

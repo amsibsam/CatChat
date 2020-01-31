@@ -54,6 +54,16 @@ class HomeWithChatNode: ASDisplayNode {
         self.viewModel.onNeedReconfigNode = { [weak self] in
             self?.setNeedsLayout()
         }
+        
+        self.viewModel.onRoomUpdated = { [weak self] newIndexPath, isInsert in
+            if isInsert {
+                self?.chatRoomTableNode.insertRows(at: [newIndexPath], with: .fade)
+                return
+            }
+            
+            self?.chatRoomTableNode.deleteRows(at: [newIndexPath], with: .fade)
+            
+        }
     }
 }
 
