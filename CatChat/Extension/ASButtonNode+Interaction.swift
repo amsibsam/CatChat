@@ -11,7 +11,7 @@ import AsyncDisplayKit
 
 extension ASButtonNode {
     private struct AssociatedObject {
-        static var key = "ASButtonNode_DidTap"
+        static var key = "ASButtonNode_tapEvent"
     }
     
     var didTap: (() -> Void)? {
